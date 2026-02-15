@@ -166,9 +166,9 @@ DebugPHP is fully analyzed with [PHPStan](https://phpstan.org) at **level 10** (
 
 ```
 ┌──────────────┐     POST /api/debug     ┌──────────────┐     SSE Stream     ┌──────────────┐
-│   Your App   │ ──────────────────────→  │   DebugPHP   │ ────────────────→  │  Dashboard   │
-│  Debug::send │                          │    Server     │                    │   (Browser)  │
-└──────────────┘                          └──────────────┘                    └──────────────┘
+│   Your App   │ ──────────────────────→ │   DebugPHP   │ ────────────────→  │  Dashboard   │
+│  Debug::send │                         │    Server    │                    │   (Browser)  │
+└──────────────┘                         └──────────────┘                    └──────────────┘
 ```
 
 ## License
