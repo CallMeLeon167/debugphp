@@ -1,0 +1,42 @@
+{
+    "name": "callmeleon167/debugphp",
+    "description": "Real-time PHP debugging in the browser — zero config, zero dependencies, just send() and see.",
+    "license": "MIT",
+    "type": "library",
+    "keywords": [
+        "debug",
+        "debugging",
+        "php",
+        "real-time",
+        "sse",
+        "developer-tools"
+    ],
+    "homepage": "https://debugphp.dev",
+    "authors": [
+        {
+            "name": "Leon Schmidt",
+            "homepage": "https://github.com/CallMeLeon167",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/CallMeLeon167/debugphp/issues",
+        "source": "https://github.com/CallMeLeon167/debugphp"
+    },
+    "require": {
+        "php": "^8.1",
+        "ext-curl": "*"
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "DebugPHP\\": "src/"
+        }
+    },
+    "scripts": {
+        "analyse": "phpstan analyse"
+    },
+    "minimum-stability": "stable"
+}

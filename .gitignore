@@ -1,0 +1,4 @@
+/vendor/
+/.phpstan-cache/
+composer.lock
+.ddev
