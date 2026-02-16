@@ -139,7 +139,7 @@ Want to keep your debug data on your own server?
 git clone https://github.com/CallMeLeon167/debugphp-server.git
 cd debugphp-server
 composer install
-php -S localhost:8080 -t public
+php -S localhost:8080
 ```
 
 Then point your configuration to your local server:
