@@ -28,6 +28,8 @@ namespace DebugPHP;
  *     Debug::init('your-session-token');
  *     Debug::send('Hello World!');
  *     Debug::send($query, 'SQL')->color('blue');
+ *     Debug::metric('Template', 'home.php');
+ *     Debug::metric('Maintenance'); // Label only, no value
  *
  * All methods are designed to fail silently if DebugPHP is not
  * initialized or is disabled, ensuring it never interrupts
@@ -66,6 +68,15 @@ final class Debug
     private static array $timers = [];
 
     /**
+     * Unique identifier for the current PHP request lifecycle.
+     *
+     * Generated once in init() and sent with every metric(). The server uses
+     * this ID to detect and remove metrics that are no longer present in the
+     * current request — i.e. metrics whose key was deleted from the code.
+     */
+    private static string $requestId = '';
+
+    /**
      * Prevent instantiation.
      *
      * This class is purely static and should not be instantiated.
@@ -78,28 +89,28 @@ final class Debug
      * Must be called before any other Debug methods. Typically placed
      * at the top of your application's entry point or bootstrap file.
      *
-     * Example:
-     *
-     *     Debug::init('a3f8c1');
-     *     Debug::init('a3f8c1', ['host' => 'https://my-server.dev']);
+     * Generates a unique request ID on every call that ties all metrics
+     * sent during this request to the same lifecycle. Metrics from previous
+     * requests that are no longer sent will be automatically removed from
+     * the dashboard toolbar.
      *
      * @param string      $session The session token from the dashboard.
-     * @param ConfigArray  $options Optional configuration overrides.
+     * @param ConfigArray $options Optional configuration overrides.
      */
     public static function init(string $session, array $options = []): void
     {
-        self::$config = new Config($session, $options);
-        self::$client = new Client(self::$config);
-        self::$paused = false;
-        self::$timers = [];
+        self::$config    = new Config($session, $options);
+        self::$client    = new Client(self::$config);
+        self::$paused    = false;
+        self::$timers    = [];
+        self::$requestId = bin2hex(random_bytes(8));
     }
 
     /**
      * Sends debug data to the dashboard.
      *
      * Accepts any data type: strings, integers, floats, booleans,
-     * arrays, objects, and exceptions. Objects implementing a toArray()
-     * method (e.g. Laravel models) are automatically converted.
+     * arrays, objects, and exceptions.
      *
      * Returns an {@see Entry} instance for optional method chaining:
      *
@@ -128,16 +139,41 @@ final class Debug
     }
 
     /**
+     * Sends a toolbar metric to the dashboard.
+     *
+     * Metrics are displayed as small chips in the dashboard topbar.
+     * Sending the same key again updates the value live (UPSERT).
+     *
+     * Each call includes the current request ID. When a metric key is removed
+     * from the code, it will no longer carry the latest request ID — the server
+     * detects this and automatically removes it from the dashboard on the next request.
+     *
+     * @param string      $key   The metric name — always shown in the toolbar.
+     * @param string|null $value Optional value. Null shows only the key.
+     */
+    public static function metric(string $key, ?string $value = null): void
+    {
+        if (!self::isReady()) {
+            return;
+        }
+
+        if (self::$client === null || self::$config === null) {
+            return;
+        }
+
+        self::$client->send('/api/metric', [
+            'session'    => self::$config->getSession(),
+            'key'        => $key,
+            'value'      => $value,
+            'request_id' => self::$requestId,
+        ]);
+    }
+
+    /**
      * Starts a named timer for performance measurement.
      *
      * Use {@see stopTimer()} with the same name to measure the elapsed
      * time and send it to the dashboard.
-     *
-     * Example:
-     *
-     *     Debug::startTimer('db-query');
-     *     $results = $db->query($sql);
-     *     Debug::stopTimer('db-query');
      *
      * @param string $name A unique name to identify this timer.
      */
@@ -152,13 +188,6 @@ final class Debug
 
     /**
      * Stops a named timer and sends the elapsed time to the dashboard.
-     *
-     * The timer must have been started with {@see startTimer()} using
-     * the same name. Returns the elapsed time in milliseconds, or null
-     * if the timer was not found or DebugPHP is not ready.
-     *
-     * The result is automatically sent to the dashboard as a timer
-     * entry with the label "Timer" and the color orange.
      *
      * @param string $name The name of the timer to stop.
      *
@@ -200,13 +229,6 @@ final class Debug
      * Expects an array of associative arrays (rows). Each row should
      * have the same keys for proper table rendering in the dashboard.
      *
-     * Example:
-     *
-     *     Debug::table([
-     *         ['name' => 'Leon', 'role' => 'Developer'],
-     *         ['name' => 'Sarah', 'role' => 'Designer'],
-     *     ]);
-     *
      * @param array<int, array<string, mixed>> $rows The table rows to display.
      *
      * @return Entry|null The created entry, or null if not ready.
@@ -234,9 +256,6 @@ final class Debug
 
     /**
      * Clears all entries in the current dashboard session.
-     *
-     * Sends a clear command to the server. Does nothing if
-     * DebugPHP is not initialized.
      */
     public static function clear(): void
     {
@@ -254,8 +273,6 @@ final class Debug
      *
      * While paused, all Debug methods silently return null without
      * sending any data. Use {@see resume()} to re-enable output.
-     *
-     * This does not affect the server-side session or dashboard.
      */
     public static function pause(): void
     {
