@@ -27,6 +27,10 @@ namespace DebugPHP;
  * an updated payload to the server so the dashboard reflects changes
  * in real-time.
  *
+ * Data is serialized using PHP's native serialize() and base64-encoded
+ * for safe transport. This preserves full PHP type information including
+ * objects, class instances, and complex nested structures.
+ *
  * This class is not intended to be instantiated directly.
  */
 final class Entry
@@ -103,15 +107,14 @@ final class Entry
      */
     public function __construct(Client $client, string $session, mixed $data, string $label = '')
     {
-        $this->client = $client;
+        $this->client  = $client;
         $this->session = $session;
-        $this->data = $data;
-        $this->label = $label;
-        $this->color = 'gray';
-        $this->type = 'info';
+        $this->data    = $data;
+        $this->label   = $label;
+        $this->color   = 'gray';
+        $this->type    = 'info';
 
-        $caller = $this->resolveCaller();
-
+        $caller     = $this->resolveCaller();
         $this->file = $caller['file'];
         $this->path = $caller['path'];
         $this->line = $caller['line'];
@@ -169,12 +172,12 @@ final class Entry
     private function dispatch(): void
     {
         $this->client->send('/api/debug', [
-            'session' => $this->session,
-            'data' => $this->serialize($this->data),
-            'label' => $this->label,
-            'color' => $this->color,
-            'type' => $this->type,
-            'origin' => [
+            'session'   => $this->session,
+            'data'      => $this->encodeData($this->data),
+            'label'     => $this->label,
+            'color'     => $this->color,
+            'type'      => $this->type,
+            'origin'    => [
                 'file' => $this->file,
                 'path' => $this->path,
                 'line' => $this->line,
@@ -183,23 +186,23 @@ final class Entry
         ]);
     }
 
+
     /**
-     * Serializes the given data into a format suitable for JSON transport.
-     *
-     * Handles special cases:
-     * - Throwable: Extracts exception class, message, code, file, line, and trace.
-     * - Objects with toArray(): Calls the method to get an array representation.
-     * - Other objects: Cast to array.
-     * - Scalars and arrays: Passed through unchanged.
-     *
-     * @param mixed $data The data to serialize.
-     *
-     * @return mixed The serialized data ready for JSON encoding.
+     * Encodes the debug data for safe transport to the server.
+     * 
+     * Exceptions are converted to structured arrays containing class, message,
+     * code, file, line, and a simplified stack trace. This ensures all
+     * relevant information is preserved without relying on fragile string representations.
+     * All data is then serialized using PHP's native serialize() and base64-encoded
+     * to maintain full type fidelity, including objects and complex structures.
+     * 
+     * @param mixed $data The original debug data provided by the user.
+     * @return mixed The encoded data ready for transmission to the server.
      */
-    private function serialize(mixed $data): mixed
+    private function encodeData(mixed $data): mixed
     {
         if ($data instanceof \Throwable) {
-            return [
+            $data = [
                 'exception' => $data::class,
                 'message' => $data->getMessage(),
                 'code' => $data->getCode(),
@@ -213,16 +216,7 @@ final class Entry
             ];
         }
 
-        if (is_object($data)) {
-            if (method_exists($data, 'toArray')) {
-                /** @var mixed */
-                return $data->toArray();
-            }
-
-            return (array) $data;
-        }
-
-        return $data;
+        return base64_encode(serialize($data));
     }
 
     /**
