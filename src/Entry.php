@@ -81,6 +81,11 @@ final class Entry
     private string $file;
 
     /**
+     * The directory path of the source file.
+     */
+    private string $path;
+
+    /**
      * The line number where Debug::send() was called.
      */
     private int $line;
@@ -106,7 +111,9 @@ final class Entry
         $this->type = 'info';
 
         $caller = $this->resolveCaller();
+
         $this->file = $caller['file'];
+        $this->path = $caller['path'];
         $this->line = $caller['line'];
 
         $this->dispatch();
@@ -169,6 +176,7 @@ final class Entry
             'type' => $this->type,
             'origin' => [
                 'file' => $this->file,
+                'path' => $this->path,
                 'line' => $this->line,
             ],
             'timestamp' => microtime(true),
@@ -224,18 +232,25 @@ final class Entry
      * not inside the DebugPHP source directory. This ensures the dashboard
      * shows the actual caller location, not internal package files.
      *
-     * @return array{file: string, line: int} The resolved file basename and line number.
+     * @return array{file: string, path: string, line: int} The resolved file basename, path, and line number.
      */
     private function resolveCaller(): array
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5);
 
         foreach ($trace as $frame) {
-            $file = $frame['file'] ?? '';
+            $class = $frame['class'] ?? '';
+            $fullpath = $frame['file'] ?? '';
 
-            if ($file !== '' && !str_contains($file, 'debugphp/src/')) {
+            $file = basename($fullpath);
+            $path = dirname($fullpath);
+
+            $function = $frame['function'] ?? '';
+
+            if ($function === 'send' && str_contains($class, 'DebugPHP\\Debug')) {
                 return [
-                    'file' => basename($file),
+                    'file' => $file,
+                    'path' => $path,
                     'line' => $frame['line'] ?? 0,
                 ];
             }
@@ -243,6 +258,7 @@ final class Entry
 
         return [
             'file' => 'unknown',
+            'path' => 'unknown',
             'line' => 0,
         ];
     }
