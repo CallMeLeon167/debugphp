@@ -42,6 +42,11 @@ final class Entry
     ];
 
     /**
+     * Absolute path to the DebugPHP package source directory.
+     */
+    private const PACKAGE_DIR = __DIR__;
+
+    /**
      * The HTTP client used to send data to the server.
      */
     private Client $client;
@@ -212,17 +217,18 @@ final class Entry
         ]);
     }
 
-
     /**
      * Encodes the debug data for safe transport to the server.
-     * 
+     *
      * Exceptions are converted to structured arrays containing class, message,
      * code, file, line, and a simplified stack trace. This ensures all
-     * relevant information is preserved without relying on fragile string representations.
-     * All data is then serialized using PHP's native serialize() and base64-encoded
-     * to maintain full type fidelity, including objects and complex structures.
-     * 
+     * relevant information is preserved without relying on fragile string
+     * representations. All data is then serialized using PHP's native
+     * serialize() and base64-encoded to maintain full type fidelity,
+     * including objects and complex structures.
+     *
      * @param mixed $data The original debug data provided by the user.
+     *
      * @return mixed The encoded data ready for transmission to the server.
      */
     private function encodeData(mixed $data): mixed
@@ -230,11 +236,11 @@ final class Entry
         if ($data instanceof \Throwable) {
             $data = [
                 'exception' => $data::class,
-                'message' => $data->getMessage(),
-                'code' => $data->getCode(),
-                'file' => $data->getFile(),
-                'line' => $data->getLine(),
-                'trace' => array_map(
+                'message'   => $data->getMessage(),
+                'code'      => $data->getCode(),
+                'file'      => $data->getFile(),
+                'line'      => $data->getLine(),
+                'trace'     => array_map(
                     static fn(array $frame): string => ($frame['file'] ?? 'unknown')
                         . ':' . ($frame['line'] ?? 0),
                     $data->getTrace()
@@ -246,34 +252,35 @@ final class Entry
     }
 
     /**
-     * Resolves the original file and line number where Debug::send() was called.
+     * Resolves the original file and line number where the Debug call was made.
      *
-     * Walks up the debug backtrace and returns the first frame that is
-     * not inside the DebugPHP source directory. This ensures the dashboard
-     * shows the actual caller location, not internal package files.
+     * Walks up the debug backtrace and returns the first frame whose file
+     * is located outside the DebugPHP package source directory. This makes
+     * the resolver work correctly regardless of which public Debug method
+     * was used.
      *
      * @return array{file: string, path: string, line: int} The resolved file basename, path, and line number.
      */
     private function resolveCaller(): array
     {
-        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5);
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
 
         foreach ($trace as $frame) {
-            $class = $frame['class'] ?? '';
             $fullpath = $frame['file'] ?? '';
 
-            $file = basename($fullpath);
-            $path = dirname($fullpath);
-
-            $function = $frame['function'] ?? '';
-
-            if ($function === 'send' && str_contains($class, 'DebugPHP\\Debug')) {
-                return [
-                    'file' => $file,
-                    'path' => $path,
-                    'line' => $frame['line'] ?? 0,
-                ];
+            if ($fullpath === '') {
+                continue;
             }
+
+            if (str_starts_with($fullpath, self::PACKAGE_DIR)) {
+                continue;
+            }
+
+            return [
+                'file' => basename($fullpath),
+                'path' => dirname($fullpath),
+                'line' => $frame['line'] ?? 0,
+            ];
         }
 
         return [
