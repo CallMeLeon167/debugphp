@@ -95,7 +95,16 @@ final class Entry
     private int $line;
 
     /**
-     * Creates a new debug entry and immediately dispatches it to the server.
+     * Whether the entry has been dispatched to the server.
+     */
+    private bool $hasDispatched = false;
+
+    /**
+     * Creates a new debug entry and marks it for sending.
+     *
+     * The entry is NOT immediately dispatched. Instead, it will be sent
+     * automatically when the object is destroyed (via __destruct) or when
+     * send() is called explicitly.
      *
      * The source file and line number are automatically resolved from
      * the call stack using {@see resolveCaller()}.
@@ -118,8 +127,6 @@ final class Entry
         $this->file = $caller['file'];
         $this->path = $caller['path'];
         $this->line = $caller['line'];
-
-        $this->dispatch();
     }
 
     /**
@@ -138,8 +145,6 @@ final class Entry
             $this->color = $color;
         }
 
-        $this->dispatch();
-
         return $this;
     }
 
@@ -157,20 +162,49 @@ final class Entry
     {
         $this->type = $type;
 
-        $this->dispatch();
-
         return $this;
+    }
+
+    /**
+     * Explicitly sends the entry to the server immediately.
+     *
+     * Normally you don't need to call this - the entry will be sent
+     * automatically when the object is destroyed. Use this method only
+     * if you need to ensure the entry is sent at a specific point.
+     *
+     * @return $this For method chaining.
+     */
+    public function send(): self
+    {
+        $this->dispatch();
+        return $this;
+    }
+
+    /**
+     * Destructor - automatically sends the entry when the object is destroyed.
+     *
+     * This ensures that chained method calls only result in a single HTTP
+     * request, sent after all modifications are complete.
+     */
+    public function __destruct()
+    {
+        $this->dispatch();
     }
 
     /**
      * Sends the current entry payload to the DebugPHP server.
      *
-     * Called automatically on construction and after each chained
-     * method call ({@see color()}, {@see type()}) to ensure the
-     * dashboard always shows the latest state.
+     * Only sends once - subsequent calls are ignored to prevent duplicate
+     * requests from both __destruct and explicit send() calls.
      */
     private function dispatch(): void
     {
+        if ($this->hasDispatched) {
+            return;
+        }
+
+        $this->hasDispatched = true;
+
         $this->client->send('/api/debug', [
             'session'   => $this->session,
             'data'      => $this->encodeData($this->data),
