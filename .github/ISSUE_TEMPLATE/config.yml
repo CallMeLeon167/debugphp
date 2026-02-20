@@ -2,4 +2,4 @@ blank_issues_enabled: false
 contact_links:
   - name: 🚨 Report a security vulnerability
     url: "mailto:kontakt@callmeleon.de?subject=DebugPHP: Security Vulnerability"
-    about: Please report security vulnerabilities privately — do not open a public issue.
+    about: Please report security vulnerabilities privately. Do not open a public issue.
