@@ -47,6 +47,12 @@ final class Entry
     private const PACKAGE_DIR = __DIR__;
 
     /**
+     * Maximum recursion depth for buildTyped().
+     * Prevents infinite loops on circular references.
+     */
+    private const MAX_DEPTH = 10;
+
+    /**
      * The HTTP client used to send data to the server.
      */
     private Client $client;
@@ -209,10 +215,14 @@ final class Entry
 
         $this->hasDispatched = true;
 
+        $data = $this->type === 'table'
+            ? $this->data
+            : $this->buildTyped($this->data);
+
         $this->client->send('/api/debug', [
             'session'    => $this->session,
             'request_id' => $this->requestId,
-            'data'       => $this->encodeData($this->data),
+            'data'       => $data,
             'label'      => $this->label,
             'color'      => $this->color,
             'type'       => $this->type,
@@ -226,37 +236,112 @@ final class Entry
     }
 
     /**
-     * Encodes the debug data for safe transport to the server.
+     * Converts a PHP value into a typed descriptor array for transmission.
      *
-     * Exceptions are converted to structured arrays containing class, message,
-     * code, file, line, and a simplified stack trace. This ensures all
-     * relevant information is preserved without relying on fragile string
-     * representations. All data is then serialized using PHP's native
-     * serialize() and base64-encoded to maintain full type fidelity,
-     * including objects and complex structures.
+     * Produces a recursive structure that preserves PHP-native type information
+     * (including class names for objects and string lengths), which the dashboard
+     * renders in a var_dump-style format rather than plain JSON.
      *
-     * @param mixed $data The original debug data provided by the user.
+     * Supported types:
+     *   null, bool, int, float, string, array, object, Throwable, resource
      *
-     * @return mixed The encoded data ready for transmission to the server.
+     * @param mixed $value The value to convert.
+     * @param int   $depth Current recursion depth (internal use only).
+     *
+     * @return array<string, mixed> The typed descriptor.
      */
-    private function encodeData(mixed $data): mixed
+    private function buildTyped(mixed $value, int $depth = 0): array
     {
-        if ($data instanceof \Throwable) {
-            $data = [
-                'exception' => $data::class,
-                'message'   => $data->getMessage(),
-                'code'      => $data->getCode(),
-                'file'      => $data->getFile(),
-                'line'      => $data->getLine(),
-                'trace'     => array_map(
-                    static fn(array $frame): string => ($frame['file'] ?? 'unknown')
-                        . ':' . ($frame['line'] ?? 0),
-                    $data->getTrace()
-                ),
+        if ($depth >= self::MAX_DEPTH) {
+            return ['type' => 'truncated'];
+        }
+
+        if ($value === null) {
+            return ['type' => 'null'];
+        }
+
+        if (is_bool($value)) {
+            return ['type' => 'bool', 'value' => $value];
+        }
+
+        if (is_int($value)) {
+            return ['type' => 'int', 'value' => $value];
+        }
+
+        if (is_float($value)) {
+            return ['type' => 'float', 'value' => $value];
+        }
+
+        if (is_string($value)) {
+            return ['type' => 'string', 'length' => strlen($value), 'value' => $value];
+        }
+
+        if (is_resource($value)) {
+            return ['type' => 'resource', 'value' => get_resource_type($value)];
+        }
+
+        if ($value instanceof \Throwable) {
+            return $this->buildTypedThrowable($value, $depth);
+        }
+
+        if (is_array($value)) {
+            $items = [];
+
+            foreach ($value as $k => $v) {
+                $items[] = ['key' => $k, 'value' => $this->buildTyped($v, $depth + 1)];
+            }
+
+            return ['type' => 'array', 'length' => count($value), 'value' => $items];
+        }
+
+        if (is_object($value)) {
+            $props = [];
+
+            foreach ((array) $value as $propName => $propValue) {
+                $cleanKey = (string) preg_replace('/^\0[^\0]*\0/', '', $propName);
+                $props[]  = ['key' => $cleanKey, 'value' => $this->buildTyped($propValue, $depth + 1)];
+            }
+
+            return [
+                'type'   => 'object',
+                'class'  => $value::class,
+                'length' => count($props),
+                'value'  => $props,
             ];
         }
 
-        return base64_encode(serialize($data));
+        return ['type' => 'unknown', 'value' => (string) $value];
+    }
+
+    /**
+     * Builds a typed descriptor for a Throwable instance.
+     *
+     * Extracts message, code, file, line, and a condensed stack trace
+     * (file:line pairs only, to keep the payload lean).
+     *
+     * @param \Throwable $throwable The exception or error to describe.
+     * @param int        $depth     Current recursion depth.
+     *
+     * @return array<string, mixed> The typed descriptor.
+     */
+    private function buildTypedThrowable(\Throwable $throwable, int $depth): array
+    {
+        $traceStrings = array_map(
+            static fn(array $frame): string => ($frame['file'] ?? 'unknown') . ':' . ($frame['line'] ?? 0),
+            $throwable->getTrace(),
+        );
+
+        return [
+            'type'  => 'exception',
+            'class' => $throwable::class,
+            'value' => [
+                ['key' => 'message', 'value' => $this->buildTyped($throwable->getMessage(), $depth + 1)],
+                ['key' => 'code',    'value' => $this->buildTyped($throwable->getCode(), $depth + 1)],
+                ['key' => 'file',    'value' => $this->buildTyped($throwable->getFile(), $depth + 1)],
+                ['key' => 'line',    'value' => $this->buildTyped($throwable->getLine(), $depth + 1)],
+                ['key' => 'trace',   'value' => $this->buildTyped($traceStrings, $depth + 1)],
+            ],
+        ];
     }
 
     /**
