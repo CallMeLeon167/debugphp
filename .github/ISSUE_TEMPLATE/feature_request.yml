@@ -1,0 +1,64 @@
+name: Feature Request
+description: Suggest a new feature or improvement.
+labels: [ "enhancement", "needs triage" ]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before submitting: please check if a similar request already exists in the [open issues](https://github.com/CallMeLeon167/debugphp/issues).
+        
+        DebugPHP is intentionally minimal and dependency-free. Feature requests that require new `require` dependencies are very unlikely to be accepted.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Describe the situation where this feature would help. "I'm always frustrated when..." works great here.
+      placeholder: "When debugging large arrays, I have to manually..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: How should it work? If you have a concrete API idea, show it.
+      render: php
+      placeholder: |
+        // For example:
+        Debug::send($array)->collapse(); // Renders collapsed by default in the dashboard
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you've considered
+      description: Are there workarounds? Why don't they work well enough?
+    validations:
+      required: false
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which area does this affect?
+      multiple: true
+      options:
+        - Debug facade (new method)
+        - Entry / fluent API
+        - Dashboard display
+        - Configuration / init()
+        - Self-hosted server
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Links, references, screenshots — anything that helps explain the idea.
+    validations:
+      required: false
