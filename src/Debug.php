@@ -226,14 +226,28 @@ final class Debug
     /**
      * Sends tabular data to the dashboard.
      *
-     * Expects an array of associative arrays (rows). Each row should
-     * have the same keys for proper table rendering in the dashboard.
+     * Expects an array of associative arrays (rows). Column headers are
+     * automatically derived from the union of all row keys. Pass an explicit
+     * $headers array to override the auto-detected column names.
      *
-     * @param array<int, array<string, mixed>> $rows The table rows to display.
+     * Auto-detect example (headers from row keys):
+     *
+     *     Debug::table([
+     *         ['id' => 1, 'name' => 'Leon', 'role' => 'Dev'],
+     *         ['id' => 2, 'name' => 'Sarah', 'role' => 'Design'],
+     *     ]);
+     *
+     * Explicit headers example:
+     *
+     *     Debug::table($rows, ['ID', 'Full Name', 'Role']);
+     *
+     * @param array<int, array<string, mixed>> $rows    The table rows to display.
+     * @param list<string>|null                $headers Optional column headers. When null,
+     *                                                  headers are auto-detected from row keys.
      *
      * @return Entry|null The created entry, or null if not ready.
      */
-    public static function table(array $rows): ?Entry
+    public static function table(array $rows, ?array $headers = null): ?Entry
     {
         if (!self::isReady()) {
             return null;
@@ -243,13 +257,18 @@ final class Debug
             return null;
         }
 
+        $data = [
+            'headers' => $headers,
+            'rows'    => $rows,
+        ];
+
         $entry = new Entry(
             self::$client,
             self::$config->getSession(),
-            $rows,
+            $data,
             'Table'
         );
-        $entry->type('table');
+        $entry->type('table')->color('blue');
 
         return $entry;
     }
