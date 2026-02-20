@@ -70,9 +70,9 @@ final class Debug
     /**
      * Unique identifier for the current PHP request lifecycle.
      *
-     * Generated once in init() and sent with every metric(). The server uses
-     * this ID to detect and remove metrics that are no longer present in the
-     * current request — i.e. metrics whose key was deleted from the code.
+     * Generated once in init() and sent with every entry and metric(). The server
+     * uses this ID to detect new requests so the dashboard can auto-clear stale
+     * entries when the "Auto-clear on new request" toggle is active.
      */
     private static string $requestId = '';
 
@@ -89,10 +89,10 @@ final class Debug
      * Must be called before any other Debug methods. Typically placed
      * at the top of your application's entry point or bootstrap file.
      *
-     * Generates a unique request ID on every call that ties all metrics
-     * sent during this request to the same lifecycle. Metrics from previous
-     * requests that are no longer sent will be automatically removed from
-     * the dashboard toolbar.
+     * Generates a unique request ID on every call that ties all entries and
+     * metrics sent during this request to the same lifecycle. When the dashboard
+     * "Auto-clear on new request" toggle is active, a new request ID causes all
+     * previous entries to be cleared automatically.
      *
      * @param string      $session The session token from the dashboard.
      * @param ConfigArray $options Optional configuration overrides.
@@ -135,7 +135,7 @@ final class Debug
             return null;
         }
 
-        return new Entry(self::$client, self::$config->getSession(), $data, $label);
+        return new Entry(self::$client, self::$config->getSession(), self::$requestId, $data, $label);
     }
 
     /**
@@ -215,6 +215,7 @@ final class Debug
         $entry = new Entry(
             self::$client,
             self::$config->getSession(),
+            self::$requestId,
             $name . ': ' . $elapsed . 'ms',
             'Timer'
         );
@@ -265,6 +266,7 @@ final class Debug
         $entry = new Entry(
             self::$client,
             self::$config->getSession(),
+            self::$requestId,
             $data,
             'Table'
         );
