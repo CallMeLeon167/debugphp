@@ -23,14 +23,6 @@ namespace DebugPHP;
  *
  *     Debug::send($query, 'SQL')->color('blue')->type('sql');
  *
- * Each call to {@see color()} or {@see type()} immediately dispatches
- * an updated payload to the server so the dashboard reflects changes
- * in real-time.
- *
- * Data is serialized using PHP's native serialize() and base64-encoded
- * for safe transport. This preserves full PHP type information including
- * objects, class instances, and complex nested structures.
- *
  * This class is not intended to be instantiated directly.
  */
 final class Entry
