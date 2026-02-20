@@ -1,0 +1,73 @@
+name: Bug Report
+description: Something isn't working as expected.
+labels: [ "bug", "needs triage" ]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. Please fill in as much detail as possible — the more context you give, the faster we can fix it.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: A clear description of the bug.
+      placeholder: "Debug::send() sends the entry twice when..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+      placeholder: "The entry should appear once in the dashboard."
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Minimal code or steps that trigger the bug.
+      render: php
+      placeholder: |
+        Debug::init('my-token');
+        Debug::send('test')->color('red');
+        // Entry appears twice on the dashboard
+    validations:
+      required: true
+
+  - type: input
+    id: php-version
+    attributes:
+      label: PHP Version
+      placeholder: "8.3"
+    validations:
+      required: true
+
+  - type: input
+    id: package-version
+    attributes:
+      label: DebugPHP Version
+      placeholder: "1.0.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: host-type
+    attributes:
+      label: Server setup
+      options:
+        - debugphp.dev (hosted)
+        - Self-hosted
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Error messages, logs, screenshots, anything else relevant.
+    validations:
+      required: false
