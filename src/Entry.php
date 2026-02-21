@@ -310,7 +310,7 @@ final class Entry
             ];
         }
 
-        return ['type' => 'unknown', 'value' => (string) $value];
+        return ['type' => 'unknown', 'value' => $value];
     }
 
     /**
