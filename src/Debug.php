@@ -278,6 +278,10 @@ final class Debug
      */
     public static function clear(): void
     {
+        if (!self::isReady()) {
+            return;
+        }
+
         if (self::$client === null || self::$config === null) {
             return;
         }
