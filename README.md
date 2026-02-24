@@ -1,4 +1,6 @@
-# DebugPHP
+<div align="center">
+
+<img src="https://github.com/CallMeLeon167/debugphp-art/blob/main/DebugPHP_logo.png?raw=true" alt="DebugPHP" width="400">
 
 **Real-time PHP debugging in the browser.**
 
@@ -7,6 +9,8 @@ DebugPHP streams your debug output to a browser-based dashboard via Server-Sent 
 [![License: MIT](https://img.shields.io/badge/License-MIT-00e89d.svg)](LICENSE)
 [![PHP Version](https://img.shields.io/badge/PHP-^8.1-777BB4.svg)](https://php.net)
 [![PHPStan](https://img.shields.io/badge/PHPStan-Level%2010-brightgreen.svg)](https://phpstan.org)
+
+</div>
 
 ---
 
@@ -21,6 +25,8 @@ DebugPHP streams your debug output to a browser-based dashboard via Server-Sent 
 | Free & open source | ✅ | ✅ | ❌ ($49/yr) | ✅ |
 | No dependencies | ✅ | ❌ | ❌ | ✅ |
 
+---
+
 ## Installation
 
 ```bash
@@ -28,6 +34,8 @@ composer require callmeleon167/debugphp --dev
 ```
 
 > **Requirements:** PHP 8.1+ and the `curl` extension.
+
+---
 
 ## Quick Start
 
@@ -44,6 +52,8 @@ Debug::send($request->all());
 ```
 
 Open the [Dashboard](https://debugphp.dev/dashboard) in your browser — your debug data appears in real-time.
+
+---
 
 ## Usage
 
@@ -94,6 +104,15 @@ Debug::table([
 ]);
 ```
 
+### Metrics
+
+```php
+// Displayed as live chips in the dashboard toolbar
+Debug::metric('Memory', memory_get_usage(true) / 1024 / 1024 . ' MB');
+Debug::metric('Template', 'home.php');
+Debug::metric('Maintenance'); // Label only, no value
+```
+
 ### Clear & Pause
 
 ```php
@@ -106,6 +125,8 @@ Debug::pause();
 // Resume output
 Debug::resume();
 ```
+
+---
 
 ## Configuration
 
@@ -131,9 +152,11 @@ Debug::init('your-session-token', [
 ]);
 ```
 
+---
+
 ## Self-Hosted
 
-Want to keep your debug data on your own server?
+Want to keep your debug data on your own server? Use the [DebugPHP Server](https://github.com/CallMeLeon167/debugphp-server):
 
 ```bash
 git clone https://github.com/CallMeLeon167/debugphp-server.git
@@ -150,13 +173,7 @@ Debug::init('your-session-token', [
 ]);
 ```
 
-## Static Analysis
-
-DebugPHP is fully analyzed with [PHPStan](https://phpstan.org) at **level 10** (the strictest level).
-
-```bash
-./vendor/bin/phpstan analyse
-```
+---
 
 ## How It Works
 
@@ -171,13 +188,26 @@ DebugPHP is fully analyzed with [PHPStan](https://phpstan.org) at **level 10** (
 └──────────────┘                         └──────────────┘                    └──────────────┘
 ```
 
+---
+
+## Static Analysis
+
+DebugPHP is fully analyzed with [PHPStan](https://phpstan.org) at **level 10** (the strictest level).
+
+```bash
+./vendor/bin/phpstan analyse
+```
+
+---
+
 ## License
 
 MIT — see [LICENSE](LICENSE) for details.
 
+---
+
 ## Links
 
 - **Website:** [debugphp.dev](https://debugphp.dev)
-- **Documentation:** [debugphp.dev/docs](https://debugphp.dev/docs)
+- **Server:** [github.com/CallMeLeon167/debugphp-server](https://github.com/CallMeLeon167/debugphp-server)
 - **Dashboard:** [debugphp.dev/dashboard](https://debugphp.dev/dashboard)
-- **GitHub:** [github.com/CallMeLeon167/debugphp](https://github.com/CallMeLeon167/debugphp) 
