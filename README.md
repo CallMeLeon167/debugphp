@@ -12,6 +12,10 @@ DebugPHP streams your debug output to a browser-based dashboard via Server-Sent 
 
 </div>
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/CallMeLeon167/debugphp-art/refs/heads/main/showcase.gif" alt="DebugPHP Demo" width="720">
+</p>
+
 ---
 
 ## Why DebugPHP?
