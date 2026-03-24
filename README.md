@@ -204,6 +204,12 @@ DebugPHP is fully analyzed with [PHPStan](https://phpstan.org) at **level 10** (
 
 ---
 
+## Contributing
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
+
+---
+
 ## License
 
 MIT — see [LICENSE](LICENSE) for details.
