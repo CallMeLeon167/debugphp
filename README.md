@@ -213,5 +213,6 @@ MIT — see [LICENSE](LICENSE) for details.
 ## Links
 
 - **Website:** [debugphp.dev](https://debugphp.dev)
+- **Documentation:** [debugphp.dev/docs](https://debugphp.dev/docs)
 - **Server:** [github.com/CallMeLeon167/debugphp-server](https://github.com/CallMeLeon167/debugphp-server)
 - **Dashboard:** [debugphp.dev/dashboard](https://debugphp.dev/dashboard)
