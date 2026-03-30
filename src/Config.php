@@ -54,14 +54,14 @@ final class Config
      *
      * @param string      $session The session token from the dashboard.
      * @param ConfigArray  $options Optional configuration overrides.
-     *                              - host:    Server URL (default: https://debugphp.dev)
+     *                              - host:    Server URL (default: https://dashboard.debugphp.dev/)
      *                              - timeout: cURL timeout in seconds (default: 3)
      *                              - enabled: Enable/disable debugging (default: true)
      */
     public function __construct(string $session, array $options = [])
     {
         $this->session = $session;
-        $this->host = $options['host'] ?? 'https://debugphp.dev';
+        $this->host = $options['host'] ?? 'https://dashboard.debugphp.dev/';
         $this->timeout = $options['timeout'] ?? 3;
         $this->enabled = $options['enabled'] ?? true;
     }
@@ -79,7 +79,7 @@ final class Config
     /**
      * Returns the DebugPHP server host URL.
      *
-     * @return string The server URL (e.g. "https://debugphp.dev").
+     * @return string The server URL (e.g. "https://dashboard.debugphp.dev/").
      */
     public function getHost(): string
     {

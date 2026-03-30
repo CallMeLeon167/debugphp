@@ -55,7 +55,7 @@ Debug::send($user);
 Debug::send($request->all());
 ```
 
-Open the [Dashboard](https://debugphp.dev/dashboard) in your browser — your debug data appears in real-time.
+Open the [Dashboard](https://dashboard.debugphp.dev/) in your browser — your debug data appears in real-time.
 
 ---
 
@@ -136,7 +136,7 @@ Debug::resume();
 
 ```php
 Debug::init('your-session-token', [
-    'host'    => 'https://debugphp.dev',  // Server URL
+    'host'    => 'https://dashboard.debugphp.dev/',  // Server URL
     'timeout' => 3,                        // cURL timeout in seconds
     'enabled' => true,                     // Set false to disable globally
 ]);
@@ -144,7 +144,7 @@ Debug::init('your-session-token', [
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| `host` | string | `https://debugphp.dev` | The DebugPHP server URL |
+| `host` | string | `https://dashboard.debugphp.dev/` | The DebugPHP server URL |
 | `timeout` | int | `3` | cURL request timeout in seconds |
 | `enabled` | bool | `true` | Enable or disable debugging globally |
 
@@ -221,4 +221,4 @@ MIT — see [LICENSE](LICENSE) for details.
 - **Website:** [debugphp.dev](https://debugphp.dev)
 - **Documentation:** [debugphp.dev/docs](https://debugphp.dev/docs)
 - **Server:** [github.com/CallMeLeon167/debugphp-server](https://github.com/CallMeLeon167/debugphp-server)
-- **Dashboard:** [debugphp.dev/dashboard](https://debugphp.dev/dashboard)
+- **Dashboard:** [dashboard.debugphp.dev](https://dashboard.debugphp.dev/)
