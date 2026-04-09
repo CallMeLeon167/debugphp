@@ -94,6 +94,8 @@ final class Debug
      * "Auto-clear on new request" toggle is active, a new request ID causes all
      * previous entries to be cleared automatically.
      *
+     * Automatically sends static environment data to the dashboard.
+     *
      * @param string      $session The session token from the dashboard.
      * @param ConfigArray $options Optional configuration overrides.
      */
@@ -104,6 +106,8 @@ final class Debug
         self::$paused    = false;
         self::$timers    = [];
         self::$requestId = bin2hex(random_bytes(8));
+
+        self::sendEnvironment();
     }
 
     /**
@@ -333,5 +337,42 @@ final class Debug
         }
 
         return self::$config->isEnabled();
+    }
+
+    /**
+     * Sends static environment data to the server.
+     *
+     * Called once during init(). These values are constant for the entire
+     * PHP process and never change during a request lifecycle.
+     */
+    private static function sendEnvironment(): void
+    {
+        if (self::$client === null || self::$config === null) {
+            return;
+        }
+
+        if (!self::$config->isEnabled()) {
+            return;
+        }
+
+
+        self::$client->send('/api/environment', [
+            'session'       => self::$config->getSession(),
+
+            // PHP Core
+            'PHP Version'        => PHP_VERSION,
+            'PHP SAPI'           => PHP_SAPI,
+
+            // System
+            'OS'                 => PHP_OS_FAMILY,
+            'OS Version'         => php_uname('r'),
+
+            // Memory & Performance
+            'Memory Limit'       => (string) ini_get('memory_limit'),
+            'Max Execution Time' => (string) ini_get('max_execution_time'),
+
+            // Timezone & Locale
+            'Timezone'           => date_default_timezone_get(),
+        ]);
     }
 }
