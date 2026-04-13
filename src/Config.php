@@ -30,6 +30,11 @@ namespace DebugPHP;
 final class Config
 {
     /**
+     * The current version of the DebugPHP client library.
+     */
+    private string $version = '1.1.0';
+
+    /**
      * The DebugPHP server URL.
      */
     private string $host;
@@ -119,5 +124,16 @@ final class Config
     public function getEndpoint(string $path): string
     {
         return rtrim($this->host, '/') . '/' . ltrim($path, '/');
+    }
+
+    /**
+     * Returns the current version of the DebugPHP client library.
+     * This can be used for debugging and compatibility checks.
+     * 
+     * @return string The client library version.
+     */
+    public function getVersion(): string
+    {
+        return $this->version;
     }
 }
