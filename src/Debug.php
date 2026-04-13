@@ -143,6 +143,206 @@ final class Debug
     }
 
     /**
+     * Sends an emergency-level message to the dashboard.
+     *
+     * Emergency level indicates the system is unusable and requires immediate attention.
+     * Displayed with red color and "emergency" type in the dashboard.
+     *
+     * @param mixed  $data  The data to debug.
+     * @param string $label Optional label for categorization.
+     *
+     * @return Entry|null The created entry, or null if not ready.
+     */
+    public static function emergency(mixed $data, string $label = 'Emergency'): ?Entry
+    {
+        if (!self::isReady()) {
+            return null;
+        }
+
+        if (self::$client === null || self::$config === null) {
+            return null;
+        }
+
+        $entry = new Entry(self::$client, self::$config->getSession(), self::$requestId, $data, $label);
+        return $entry->type('emergency')->color('red');
+    }
+
+    /**
+     * Sends an alert-level message to the dashboard.
+     *
+     * Alert level indicates action must be taken immediately.
+     * Displayed with red color and "alert" type in the dashboard.
+     *
+     * @param mixed  $data  The data to debug.
+     * @param string $label Optional label for categorization.
+     *
+     * @return Entry|null The created entry, or null if not ready.
+     */
+    public static function alert(mixed $data, string $label = 'Alert'): ?Entry
+    {
+        if (!self::isReady()) {
+            return null;
+        }
+
+        if (self::$client === null || self::$config === null) {
+            return null;
+        }
+
+        $entry = new Entry(self::$client, self::$config->getSession(), self::$requestId, $data, $label);
+        return $entry->type('alert')->color('red');
+    }
+
+    /**
+     * Sends a critical-level message to the dashboard.
+     *
+     * Critical level indicates critical conditions that require immediate attention.
+     * Displayed with red color and "critical" type in the dashboard.
+     *
+     * @param mixed  $data  The data to debug.
+     * @param string $label Optional label for categorization.
+     *
+     * @return Entry|null The created entry, or null if not ready.
+     */
+    public static function critical(mixed $data, string $label = 'Critical'): ?Entry
+    {
+        if (!self::isReady()) {
+            return null;
+        }
+
+        if (self::$client === null || self::$config === null) {
+            return null;
+        }
+
+        $entry = new Entry(self::$client, self::$config->getSession(), self::$requestId, $data, $label);
+        return $entry->type('critical')->color('red');
+    }
+
+    /**
+     * Sends an error-level message to the dashboard.
+     *
+     * Error level indicates runtime errors that should be logged and monitored.
+     * Displayed with red color and "error" type in the dashboard.
+     *
+     * @param mixed  $data  The data to debug.
+     * @param string $label Optional label for categorization.
+     *
+     * @return Entry|null The created entry, or null if not ready.
+     */
+    public static function error(mixed $data, string $label = 'Error'): ?Entry
+    {
+        if (!self::isReady()) {
+            return null;
+        }
+
+        if (self::$client === null || self::$config === null) {
+            return null;
+        }
+
+        $entry = new Entry(self::$client, self::$config->getSession(), self::$requestId, $data, $label);
+        return $entry->type('error')->color('red');
+    }
+
+    /**
+     * Sends a warning-level message to the dashboard.
+     *
+     * Warning level indicates something unexpected happened but it's not an error.
+     * Displayed with orange color and "warning" type in the dashboard.
+     *
+     * @param mixed  $data  The data to debug.
+     * @param string $label Optional label for categorization.
+     *
+     * @return Entry|null The created entry, or null if not ready.
+     */
+    public static function warning(mixed $data, string $label = 'Warning'): ?Entry
+    {
+        if (!self::isReady()) {
+            return null;
+        }
+
+        if (self::$client === null || self::$config === null) {
+            return null;
+        }
+
+        $entry = new Entry(self::$client, self::$config->getSession(), self::$requestId, $data, $label);
+        return $entry->type('warning')->color('orange');
+    }
+
+    /**
+     * Sends a notice-level message to the dashboard.
+     *
+     * Notice level indicates normal but significant events.
+     * Displayed with blue color and "notice" type in the dashboard.
+     *
+     * @param mixed  $data  The data to debug.
+     * @param string $label Optional label for categorization.
+     *
+     * @return Entry|null The created entry, or null if not ready.
+     */
+    public static function notice(mixed $data, string $label = 'Notice'): ?Entry
+    {
+        if (!self::isReady()) {
+            return null;
+        }
+
+        if (self::$client === null || self::$config === null) {
+            return null;
+        }
+
+        $entry = new Entry(self::$client, self::$config->getSession(), self::$requestId, $data, $label);
+        return $entry->type('notice')->color('blue');
+    }
+
+    /**
+     * Sends an info-level message to the dashboard.
+     *
+     * Info level indicates general informational messages.
+     * Displayed with gray color and "info" type in the dashboard.
+     *
+     * @param mixed  $data  The data to debug.
+     * @param string $label Optional label for categorization.
+     *
+     * @return Entry|null The created entry, or null if not ready.
+     */
+    public static function info(mixed $data, string $label = 'Info'): ?Entry
+    {
+        if (!self::isReady()) {
+            return null;
+        }
+
+        if (self::$client === null || self::$config === null) {
+            return null;
+        }
+
+        $entry = new Entry(self::$client, self::$config->getSession(), self::$requestId, $data, $label);
+        return $entry->type('info')->color('gray');
+    }
+
+    /**
+     * Sends a debug-level message to the dashboard.
+     *
+     * Debug level indicates detailed diagnostic information.
+     * Displayed with purple color and "debug" type in the dashboard.
+     *
+     * @param mixed  $data  The data to debug.
+     * @param string $label Optional label for categorization.
+     *
+     * @return Entry|null The created entry, or null if not ready.
+     */
+    public static function debug(mixed $data, string $label = 'Debug'): ?Entry
+    {
+        if (!self::isReady()) {
+            return null;
+        }
+
+        if (self::$client === null || self::$config === null) {
+            return null;
+        }
+
+        $entry = new Entry(self::$client, self::$config->getSession(), self::$requestId, $data, $label);
+        return $entry->type('debug')->color('purple');
+    }
+
+    /**
      * Sends a toolbar metric to the dashboard.
      *
      * Metrics are displayed as small chips in the dashboard topbar.
