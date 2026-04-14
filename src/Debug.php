@@ -111,6 +111,47 @@ final class Debug
     }
 
     /**
+     * Hooks DebugPHP into a supported framework integration.
+     *
+     * This method is designed to be modular so additional frameworks/CMS can be added
+     * behind the same API without introducing runtime dependencies.
+     *
+     * Fail-silent: returns false on any failure.
+     *
+     * Example:
+     *   Debug::init('token');
+     *   Debug::framework('laravel');
+     *
+     * @param string               $name    The framework name (e.g. "laravel").
+     * @param array<string, mixed> $options Optional integration options.
+     *
+     * @return bool True when the hook was installed, false otherwise.
+     */
+    public static function framework(string $name, array $options = []): bool
+    {
+        if (!self::isReady()) {
+            return false;
+        }
+
+        try {
+            $normalized = strtolower(trim($name));
+            if ($normalized === '') {
+                return false;
+            }
+
+            return \DebugPHP\Framework\FrameworkRegistry::hook(
+                $normalized,
+                self::$client,
+                self::$config,
+                self::$requestId,
+                $options,
+            );
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
+    /**
      * Sends debug data to the dashboard.
      *
      * Accepts any data type: strings, integers, floats, booleans,
