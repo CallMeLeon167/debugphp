@@ -25,6 +25,13 @@ use DebugPHP\Debug;
 final class LaravelHook
 {
     /**
+     * Recent mirrored events to avoid duplicates (Laravel stacks can emit twice).
+     *
+     * @var array<string, true>
+     */
+    private static array $dedupe = [];
+
+    /**
      * Prevent double-installation in the same request.
      */
     private static bool $installed = false;
@@ -261,6 +268,17 @@ final class LaravelHook
         bool $includeContext,
     ): void {
         try {
+            $key = self::dedupeKey($level, $message, $context, $label, $includeContext);
+            if (isset(self::$dedupe[$key])) {
+                return;
+            }
+
+            self::$dedupe[$key] = true;
+
+            if (count(self::$dedupe) > 256) {
+                self::$dedupe = [];
+            }
+
             $payload = $includeContext
                 ? ['message' => $message, 'context' => $context]
                 : $message;
@@ -279,8 +297,27 @@ final class LaravelHook
     }
 
     /**
+     * @param array<string, mixed> $context
+     */
+    private static function dedupeKey(
+        string $level,
+        string $message,
+        array $context,
+        string $label,
+        bool $includeContext,
+    ): string {
+        try {
+            $ctx = $includeContext ? json_encode($context, JSON_THROW_ON_ERROR) : '';
+        } catch (\Throwable) {
+            $ctx = '';
+        }
+
+        return hash('sha256', $level . "\n" . $label . "\n" . $message . "\n" . $ctx);
+    }
+
+    /**
      * Parse a string option with a default.
-     * 
+     *
      * @param array<string, mixed> $options
      */
     private static function optString(array $options, string $key, string $default): string
@@ -291,7 +328,7 @@ final class LaravelHook
 
     /**
      * Parse a boolean option with a default.
-     * 
+     *
      * @param array<string, mixed> $options
      */
     private static function optBool(array $options, string $key, bool $default): bool
