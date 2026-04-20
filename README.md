@@ -63,21 +63,37 @@ Open the [Dashboard](https://dashboard.debugphp.dev/) in your browser — your d
 
 Want to keep your debug data on your own server? Use the [DebugPHP Server](https://github.com/CallMeLeon167/debugphp-server):
 
+### Option A — PHP built-in server
 ```bash
 git clone https://github.com/CallMeLeon167/debugphp-server.git
 cd debugphp-server
 composer install
-php -S localhost:8080
+php -S localhost:8787
 ```
 
 Then point your configuration to your local server:
 
 ```php
 Debug::init('your-session-token', [
-    'host' => 'http://localhost:8080',
+    'host' => 'http://localhost:8787',
 ]);
 ```
 
+### Option B — Docker
+
+```bash
+git clone https://github.com/CallMeLeon167/debugphp-server.git
+cd debugphp-server
+docker compose up
+```
+
+Enable auto-detection so the client finds the server automatically:
+
+```php
+Debug::init('your-session-token', [
+    'dockerized' => true,
+]);
+```
 ---
 
 ## How It Works
