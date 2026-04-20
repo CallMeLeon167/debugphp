@@ -25,6 +25,7 @@ namespace DebugPHP;
  *     host?: string,
  *     timeout?: int,
  *     enabled?: bool,
+ *     dockerized?: bool,
  * }
  */
 final class Config
@@ -32,7 +33,7 @@ final class Config
     /**
      * The current version of the DebugPHP client library.
      */
-    private string $version = '1.2.0';
+    private string $version = '1.3.0';
 
     /**
      * The DebugPHP server URL.
@@ -55,6 +56,11 @@ final class Config
     private string $session;
 
     /**
+     * Whether the client is running in a Dockerized environment.
+     */
+    private bool $dockerized = false;
+
+    /**
      * Creates a new configuration instance.
      *
      * @param string      $session The session token from the dashboard.
@@ -62,13 +68,19 @@ final class Config
      *                              - host:    Server URL (default: https://dashboard.debugphp.dev/)
      *                              - timeout: cURL timeout in seconds (default: 3)
      *                              - enabled: Enable/disable debugging (default: true)
+     *                              - dockerized: Whether the client is running in a Dockerized environment (default: false)
+     * @return void 
      */
     public function __construct(string $session, array $options = [])
     {
         $this->session = $session;
-        $this->host = $options['host'] ?? 'https://dashboard.debugphp.dev/';
         $this->timeout = $options['timeout'] ?? 3;
         $this->enabled = $options['enabled'] ?? true;
+        $this->dockerized = $options['dockerized'] ?? false;
+
+        $this->host = $options['host']
+            ?? ($this->dockerized ? $this->resolveDebugServerUrl() : false)
+            ?: 'https://dashboard.debugphp.dev/';
     }
 
     /**
@@ -135,5 +147,49 @@ final class Config
     public function getVersion(): string
     {
         return $this->version;
+    }
+
+    /**
+     * Returns whether the client is running in a Dockerized environment.
+     * This can be used to adjust connection settings when running inside Docker.
+     * 
+     * @return string|false false if not running in Docker, otherwise the Dockerized server URL.
+     */
+    function resolveDebugServerUrl(): string|false
+    {
+        $port = 8787;
+        $ttl = 60 * 60; // 1 hour
+        $timeoutSeconds = 0.3;
+        $cacheFile = sys_get_temp_dir() . '/debugphp_server.cache';
+
+        if (is_file($cacheFile) && (time() - filemtime($cacheFile)) < $ttl) {
+            $content = file_get_contents($cacheFile);
+            if ($content === 'false') {
+                return false;
+            }
+            if ($content !== false && $content !== '') {
+                return $content;
+            }
+        }
+
+        $candidates = [
+            'debugphp-server',
+            'host.docker.internal',
+            '127.0.0.1',
+        ];
+
+        foreach ($candidates as $host) {
+            $socket = @fsockopen($host, $port, $errorCode, $errorMessage, $timeoutSeconds);
+
+            if ($socket !== false) {
+                fclose($socket);
+                $url = "http://{$host}:{$port}";
+                file_put_contents($cacheFile, $url);
+                return $url;
+            }
+        }
+
+        file_put_contents($cacheFile, 'false');
+        return false;
     }
 }
