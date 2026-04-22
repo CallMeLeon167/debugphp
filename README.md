@@ -8,7 +8,7 @@ DebugPHP streams your debug output to a browser-based dashboard via Server-Sent 
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-00e89d.svg)](LICENSE)
 [![PHP Version](https://img.shields.io/badge/PHP-^8.1-777BB4.svg)](https://php.net)
-[![PHPStan](https://img.shields.io/badge/PHPStan-Level%2010-brightgreen.svg)](https://phpstan.org)
+[![Packagist Downloads](https://img.shields.io/packagist/dt/callmeleon167/debugphp.svg)](https://packagist.org/packages/callmeleon167/debugphp)
 
 </div>
 
