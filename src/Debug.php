@@ -77,6 +77,13 @@ final class Debug
     private static string $requestId = '';
 
     /**
+     * The active error capture instance, or null if captureErrors() was not called.
+     *
+     * @var ErrorCapture|null
+     */
+    private static ?ErrorCapture $errorCapture = null;
+
+    /**
      * Prevent instantiation.
      *
      * This class is purely static and should not be instantiated.
@@ -615,5 +622,42 @@ final class Debug
             // Timezone & Locale
             'Timezone'           => date_default_timezone_get(),
         ]);
+    }
+
+    /**
+     * Registers a PHP error handler that forwards captured errors to the dashboard.
+     *
+     * Intercepts non-fatal PHP errors via set_error_handler() and fatal errors
+     * (E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR) via a shutdown function.
+     *
+     * Can only be called after {@see init()}. Calling it multiple times has no
+     * additional effect — only the first call registers the handler.
+     *
+     * @param int $levels Bitmask of PHP error level constants to capture.
+     */
+    public static function captureErrors(int $levels = E_ALL): void
+    {
+        if (!self::isReady()) {
+            return;
+        }
+
+        if (self::$errorCapture !== null) {
+            return;
+        }
+
+        if (self::$client === null || self::$config === null) {
+            return;
+        }
+
+        try {
+            self::$errorCapture = new ErrorCapture(
+                $levels,
+                self::$client,
+                self::$config->getSession(),
+                self::$requestId,
+            );
+        } catch (\Throwable) {
+            // Fail silently
+        }
     }
 }
