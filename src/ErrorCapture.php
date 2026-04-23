@@ -275,10 +275,9 @@ final class ErrorCapture
             (bool) ($errno & E_USER_ERROR)      => 'E_USER_ERROR',
             (bool) ($errno & E_USER_WARNING)    => 'E_USER_WARNING',
             (bool) ($errno & E_USER_NOTICE)     => 'E_USER_NOTICE',
-            (bool) ($errno & E_STRICT)          => 'E_STRICT',
             (bool) ($errno & E_DEPRECATED)      => 'E_DEPRECATED',
             (bool) ($errno & E_USER_DEPRECATED) => 'E_USER_DEPRECATED',
-            default                              => 'E_UNKNOWN',
+            default                             => 'E_UNKNOWN',
         };
     }
 
@@ -293,7 +292,7 @@ final class ErrorCapture
     {
         $isFatal   = (bool) ($errno & (E_ERROR | E_PARSE | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR));
         $isWarning = (bool) ($errno & (E_WARNING | E_CORE_WARNING | E_COMPILE_WARNING | E_USER_WARNING));
-        $isNotice  = (bool) ($errno & (E_NOTICE | E_USER_NOTICE | E_STRICT));
+        $isNotice  = (bool) ($errno & (E_NOTICE | E_USER_NOTICE));
 
         return match (true) {
             $isFatal   => 'red',

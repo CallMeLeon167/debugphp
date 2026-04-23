@@ -33,7 +33,7 @@ final class Config
     /**
      * The current version of the DebugPHP client library.
      */
-    private string $version = '1.4.0';
+    private string $version = '1.4.1';
 
     /**
      * The DebugPHP server URL.
